@@ -1,7 +1,6 @@
 # 🛡️ Warranty Claims Fraud Prediction
 
 An end-to-end Machine Learning project designed to analyze customer, location, product, call center, and service data to detect and predict **fraudulent warranty claims** in consumer electronics (Air Conditioners and Televisions).
-
 ---
 
 ## 📌 Project Overview
