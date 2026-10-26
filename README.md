@@ -88,29 +88,3 @@ graph LR
 └── README.md                               # 📖 Documentation
 ```
 
----
-
-## 🚀 Quickstart & Installation
-
-### 1. Clone the repository
-```bash
-git clone https://github.com/roy-21/Warranty-Claims-Fraud-Prediction.git
-cd Warranty-Claims-Fraud-Prediction
-```
-
-### 2. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Run the Jupyter Notebook
-```bash
-jupyter notebook warranty-claims-fraud-prediction.ipynb
-```
-
-*(Alternatively, run the standalone script directly in your terminal: `python advanced_fraud_detection.py`)*
-
----
-
-## 📜 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
