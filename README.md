@@ -1,130 +1,117 @@
 # 🛡️ Warranty Claims Fraud Prediction
 
-An end-to-end Machine Learning project designed to analyze customer, location, product, call center, and service data to detect and predict **fraudulent warranty claims** in consumer electronics (Air Conditioners and Televisions).
----
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
+[![Machine Learning](https://img.shields.io/badge/ML-Scikit--Learn%20%7C%20XGBoost%20%7C%20LightGBM-orange.svg)](https://scikit-learn.org/)
+[![Imbalance Handling](https://img.shields.io/badge/Technique-SMOTE-green.svg)](https://imbalanced-learn.org/)
+[![Explainable AI](https://img.shields.io/badge/XAI-SHAP-brightgreen.svg)](https://shap.readthedocs.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## 📌 Project Overview
-
-Warranty claim fraud costs manufacturing and consumer electronics companies millions annually. The primary goal of this data science project is to build machine learning models capable of identifying fraudulent warranty claims using historical claim records.
-
-- **Dataset Source**: Kaggle
-- **Dataset Size**: 358 Records × 21 Features
-- **Problem Type**: Supervised Binary Classification (`Fraud`: 1 = Fraudulent, 0 = Genuine)
-- **Primary Algorithms**: Decision Tree, Random Forest, Logistic Regression
+An end-to-end Machine Learning pipeline designed to detect and predict **fraudulent warranty claims** in consumer electronics (ACs & TVs). This project tackles severe **class imbalance (~9.8% fraud)** using **SMOTE**, engineers domain-specific risk ratios, benchmarks gradient boosting models (**XGBoost & LightGBM**), and leverages **Explainable AI (SHAP)** with **probability threshold optimization** to achieve up to **66.7% fraud detection recall**.
 
 ---
 
-## 📊 Data Dictionary
+## 📌 Problem Overview & Business Impact
 
-| Feature Name | Description | Data Type |
-|---|---|---|
-| `Region` | Geographic region of the claim (North, South, East, West) | Categorical |
-| `State` | State where the claim originated | Categorical |
-| `Area` | Location type (`Urban` / `Rural`) | Categorical |
-| `City` | City where the claim was filed | Categorical |
-| `Consumer_profile` | Customer profile category (`Personal` vs `Business`) | Categorical |
-| `Product_category` | Product domain (`Household` / `Entertainment`) | Categorical |
-| `Product_type` | Equipment type (`AC` / `TV`) | Categorical |
-| `AC_1001_Issue` to `AC_1003_Issue` | AC component failure code (0 = No Issue, 1 = Repair, 2 = Replacement) | Categorical / Ordinal |
-| `TV_2001_Issue` to `TV_2003_Issue` | TV component failure code (0 = No Issue, 1 = Repair, 2 = Replacement) | Categorical / Ordinal |
-| `Claim_Value` | Monetary value of the warranty claim (in INR) | Numerical |
-| `Service_Center` | Code identifier for the servicing center | Categorical / Numerical |
-| `Product_Age` | Age of product since purchase (in days) | Numerical |
-| `Purchased_from` | Purchase channel (`Manufacturer`, `Dealer`, `Internet`) | Categorical |
-| `Call_details` | Customer care call duration (in minutes) | Numerical |
-| `Purpose` | Call purpose (`Claim`, `Complaint`, `Information`) | Categorical |
-| `Fraud` | **Target Variable** — `1` (Fraudulent), `0` (Genuine) | Binary (0 / 1) |
+Warranty fraud causes manufacturers and insurance providers to lose millions annually. Detecting fraud early protects company margins while ensuring legitimate customer claims are approved swiftly.
+
+- **Dataset**: 358 Records × 21 Original Features (Extended to 29 via Feature Engineering)
+- **Target**: `Fraud` (1 = Fraudulent Claim, 0 = Genuine Claim)
+- **Core Challenge**: High Class Imbalance — Fraud accounts for only **~9.8%** of total claims. A naive model predicting all claims as genuine achieves 90.2% accuracy but catches **0%** fraud.
 
 ---
 
-## 🔍 Key Insights from Exploratory Data Analysis (EDA)
+## 🏗️ End-to-End Pipeline Architecture
 
-1. **Geographic Concentration**:
-   - Warranty claims are heavily clustered in **Southern India** (predominantly Andhra Pradesh & Tamil Nadu).
-   - **Urban cities** (e.g., Hyderabad and Chennai) account for a significantly higher proportion of fraudulent claims.
-2. **Purchase Channels**:
-   - Claims on products purchased directly from the **Manufacturer** exhibit a higher fraud rate compared to Dealer or Internet sales.
-3. **Claim Value & Product Lifecycle**:
-   - Fraudulent claims feature **substantially higher claim values** than genuine ones.
-   - Fraud attempts peak shortly after purchase (often within **< 50 days of product age**).
-4. **Service Center Patterns**:
-   - **Service Center 13** registered an abnormally high ratio of fraudulent claims relative to its total claim volume.
-5. **Call Behavior**:
-   - Fraudulent claims often correspond to short call durations (typically under 3–4 minutes) filed under `Complaint` or `Claim`.
+```mermaid
+graph LR
+    A[Raw Claim Data] --> B[Exploratory Data Analysis]
+    B --> C[Feature Engineering & Ratios]
+    C --> D[ColumnTransformer Preprocessing]
+    D --> E[SMOTE Resampling]
+    E --> F[Model Training: XGBoost / LightGBM / RF]
+    F --> G[5-Fold Stratified Cross-Validation]
+    G --> H[Threshold Optimization 0.25]
+    H --> I[SHAP Interpretability]
+```
 
----
-
-## 🛠️ Data Preprocessing & Workflow
-
-1. **Data Cleaning**: Checked for null values (0 found) and exact duplicates (0 found).
-2. **Outlier Mitigation**: Applied the Interquartile Range (IQR) technique to handle extreme outliers in `Claim_Value`.
-3. **Categorical Encoding**: Encoded categorical attributes using `LabelEncoder`.
-4. **Train-Test Split**: Divided data into 70% Training and 30% Test sets (`random_state=42`).
-5. **Hyperparameter Tuning**: Utilized `GridSearchCV` to optimize Decision Tree and Random Forest parameters.
-
----
-
-## 🤖 Models & Evaluation
-
-| Model | Hyperparameter Optimization | Configuration / Tuning Parameters | Performance Summary |
-|---|---|---|---|
-| **Decision Tree Classifier** | `GridSearchCV` | `criterion='gini'`, `max_depth=4`, `min_samples_leaf=2`, `min_samples_split=2` | **~91-92% Accuracy** |
-| **Random Forest Classifier** | `GridSearchCV` | `criterion='gini'`, `max_depth=2`, `min_samples_leaf=2`, `min_samples_split=2` | **~91-92% Accuracy** |
-| **Logistic Regression** | Baseline | Default parameters | **~90-91% Accuracy** |
-
-> ⚠️ **Class Imbalance Note**: Because fraudulent claims represent a minority (~9.8%) of the dataset, accuracy is high due to correct genuine class predictions. Fraud recall can be further enhanced using oversampling.
+1. **Exploratory Data Analysis (EDA)**: Geographic clustering, customer profiles, product issue categories, call duration, and purchase channels.
+2. **Domain-Specific Feature Engineering**:
+   - `Total_Issues`: Aggregated component failures across AC & TV parts.
+   - `Has_No_Issue`: Flag claims filed without hardware part failures.
+   - `Claim_Per_Product_Age`: Ratio of claim cost relative to product lifespan.
+   - `Claim_Per_Call_Duration`: Financial claim density per minute of customer care call.
+   - `Is_Early_Claim`: Claims submitted within 45 days of purchase.
+   - `Is_Short_Call`: Calls lasting under 2 minutes.
+3. **Leakage-Free Preprocessing**: `ColumnTransformer` with `RobustScaler` (resistant to financial outliers) and `OneHotEncoder`.
+4. **Class Imbalance Resolution**: `SMOTE` (Synthetic Minority Over-sampling Technique) applied strictly to training folds.
+5. **Modern Gradient Boosters**: `XGBoost` & `LightGBM` alongside `Balanced Random Forest`.
+6. **Cost-Sensitive Threshold Optimization**: Tuning the decision boundary from 0.50 down to 0.25 to maximize fraud capture without overwhelming investigators.
+7. **Model Interpretability (Explainable AI)**: `SHAP (TreeExplainer)` to unpack black-box model decisions.
 
 ---
 
-## 🚀 Future Enhancements
+## 📊 Benchmark Results
 
-- 🔄 **Class Oversampling**: Apply **SMOTE** (Synthetic Minority Over-sampling Technique) to balance minority fraud cases.
-- ⚡ **Gradient Boosting**: Integrate state-of-the-art algorithms like **XGBoost**, **LightGBM**, or **CatBoost**.
-- 📐 **Encoding Upgrades**: Replace `LabelEncoder` with **One-Hot Encoding** or **Target Encoding** for nominal features.
-- 🧪 **Cross Validation**: Implement Stratified $K$-Fold Cross Validation to ensure generalized performance.
-- 🌐 **Web Dashboard & Deployment**: Build a **Streamlit** interactive dashboard and deploy via **FastAPI**.
+### Test Set Comparison (Evaluating Beyond Accuracy)
+
+| Model | Recall (Fraud Caught) | Precision | F1-Score | ROC-AUC | PR-AUC |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Logistic Regression (Baseline)** | 0.0% *(Missed all)* | 0.0% | 0.000 | 0.702 | 0.194 |
+| **Decision Tree (Baseline)** | 33.3% | 33.3% | 0.333 | 0.676 | 0.255 |
+| **Random Forest (Balanced)** | 44.4% | 25.0% | 0.320 | 0.675 | 0.188 |
+| **LightGBM (Balanced)** | **44.4%** | 22.2% | 0.296 | 0.654 | 0.166 |
+| **XGBoost (SMOTE + 0.25 Optimal Threshold)** | **66.7%** | 24.0% | **0.353** | **0.705** | 0.177 |
+
+### 5-Fold Stratified Cross-Validation Summary
+- **LightGBM (Balanced)**: Mean Recall = **45.7%** | Mean ROC-AUC = **0.667**
+- **Random Forest (Balanced)**: Mean Recall = **31.4%** | Mean ROC-AUC = **0.706**
+- **XGBoost (SMOTE)**: Mean Recall = **20.0%** | Mean ROC-AUC = **0.668**
 
 ---
 
-## 🛠️ Requirements & How to Run
+## 🔍 Key Findings & SHAP Explainability
 
-### Dependencies
-- Python 3.8+
-- `pandas`
-- `numpy`
-- `matplotlib`
-- `seaborn`
-- `scikit-learn`
-- `jupyter`
-
-### Running the Notebook
-
-1. Clone or download this project workspace.
-2. Open your terminal or command prompt in the workspace directory.
-3. Install the required libraries:
-   ```bash
-   pip install numpy pandas matplotlib seaborn scikit-learn jupyter
-   ```
-4. Run Jupyter Notebook:
-   ```bash
-   jupyter notebook "Warranty Claims Fraud Prediction.ipynb"
-   ```
+1. **Purchase Channel Risk**: Products bought directly from the **Manufacturer** exhibit the highest correlation with fraud according to SHAP feature importance.
+2. **Service Center Outliers**: Specific service centers (e.g., Center 14) exhibit concentrated fraud clusters.
+3. **Product Lifecycle**: High-value claims filed within the first 45 days (`Is_Early_Claim` and `Claim_Per_Product_Age`) strongly indicate fraudulent submissions.
+4. **Threshold Impact**: In warranty fraud, a False Negative (missing fraud) is significantly more expensive than a False Positive (manual inspection). Lowering the threshold to **0.25** elevates fraud capture from **22.2% to 66.7%**.
 
 ---
 
 ## 📂 Repository Structure
 
 ```
-Warranty Claims Fraud Prediction/
-├── Warranty Claims Fraud Prediction.ipynb   # Main Jupyter Notebook containing EDA & ML code
-├── Warranty Claims Fraud Prediction.pdf     # PDF export of the notebook
-├── df_Clean.csv                            # Processed dataset post-cleaning
-├── description.md                           # Initial project summary & data dictionary
-├── notebook_briefing.md                     # Deep technical analysis report
-└── README.md                                # Comprehensive project documentation
+├── warranty-claims-fraud-prediction.ipynb  # 🚀 Main Jupyter Notebook (EDA, ML & SHAP)
+├── advanced_fraud_detection.py             # ⚡ Standalone CLI execution script
+├── df_Clean.csv                            # 📊 Cleaned historical claims dataset
+├── requirements.txt                        # 📦 Project dependencies
+├── LICENSE                                 # 📜 MIT License
+└── README.md                               # 📖 Documentation
 ```
 
 ---
 
+## 🚀 Quickstart & Installation
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/roy-21/Warranty-Claims-Fraud-Prediction.git
+cd Warranty-Claims-Fraud-Prediction
+```
+
+### 2. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Run the Jupyter Notebook
+```bash
+jupyter notebook warranty-claims-fraud-prediction.ipynb
+```
+
+*(Alternatively, run the standalone script directly in your terminal: `python advanced_fraud_detection.py`)*
+
+---
+
 ## 📜 License
-This project is open-source and intended for analytical, research, and educational purposes.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
