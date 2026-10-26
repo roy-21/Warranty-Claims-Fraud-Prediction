@@ -82,7 +82,6 @@ graph LR
 
 ```
 ├── warranty-claims-fraud-prediction.ipynb  # 🚀 Main Jupyter Notebook (EDA, ML & SHAP)
-├── advanced_fraud_detection.py             # ⚡ Standalone CLI execution script
 ├── df_Clean.csv                            # 📊 Cleaned historical claims dataset
 ├── requirements.txt                        # 📦 Project dependencies
 ├── LICENSE                                 # 📜 MIT License
